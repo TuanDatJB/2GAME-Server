@@ -9,7 +9,7 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   phoneNumber: {type: String,},
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  avatarUrl: { type: String },
+  avatar: { type: String },
   createdAt: { type: Date, default: Date.now },
   isVerified: { type: Boolean, default: false },
   bio: { type: String }

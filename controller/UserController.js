@@ -1,40 +1,38 @@
-const User = require('../model/User');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const sendToken = require('../Utils/jwtToken')
+const { uploadCloudAvatar } = require('../config/cloudinary.config');
 
 const userController = {
   // Register
   register: async (req, res) => {
     try {
-      const { email, password, phoneNumber, username } = req.body;
-
-      // Kiểm tra xem email đã tồn tại chưa
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ message: 'Email already exists' });
-      }
-
-      // Tạo user mới
-      const newUser = new User({
-        email,
-        password,
-        phoneNumber,
-        username // Thêm trường name vào đối tượng user
-
-    
+      uploadCloudAvatar(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({ message: 'Avatar upload failed', error: err });
+        }
+  
+        const { email, password, phoneNumber, username } = req.body;
+        const avatar = req.files.map(file => file.path)[0]; // Assuming single file upload for avatar
+  
+        const newUser = new User({
+          email,
+          password,
+          phoneNumber,
+          username,
+          avatar
+        });
+  
+        // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);
+        newUser.password = await bcrypt.hash(password, salt);
+  
+        await newUser.save();
+        res.status(201).json({ message: 'User registered successfully', user: newUser });
       });
-
-      // Mã hóa mật khẩu trước khi lưu vào database
-      const salt = await bcrypt.genSalt(10);
-      newUser.password = await bcrypt.hash(password, salt);
-
-      // Lưu user vào database
-      await newUser.save();
-
-      res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Error registering user:', error);
       res.status(500).json({ message: 'Error registering user' });
     }
   },
@@ -96,9 +94,18 @@ const userController = {
     console.error('Change password error:', error);
     res.status(500).json({ message: 'Error changing password' });
   }
+},
+
+// Get all users
+getAllUsers: async (req, res) => {
+  try {
+    const users = await User.find(); // Retrieve all users from the database
+    res.status(200).json(users); // Send the users as a JSON response
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
 }
-
-
 
 }
 

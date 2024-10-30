@@ -1,4 +1,4 @@
-const Article = require('../model/Article');
+const Article = require('../models/Article');
 const { uploadCloud } = require('../config/cloudinary.config');
 
 const postArticle = async (req, res) => {
@@ -112,4 +112,46 @@ const deleteArticle = async (req, res) => {
   }
 };
 
-module.exports = { postArticle, editArticle, deleteArticle };
+const getAllArticles = async (req, res) => {
+  try {
+    // Lấy các tham số query từ request
+    const { page = 1, limit = 10, category, tags } = req.query;
+    
+    // Xây dựng query filter
+    let query = {};
+    if (category) query.category = category;
+    if (tags) query.tags = { $in: tags.split(',') };
+
+    // Tính toán skip để phân trang
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Thực hiện query với phân trang
+    const articles = await Article
+      .find(query)
+      .populate('category tags author', 'name username')
+      .populate({
+        path: 'comments',
+        populate: { path: 'user', select: 'username avatarUrl' }, // Only fetch 'username' from comment user
+        select: 'content createdAt', // Only fetch 'content' from comments
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Đếm tổng số bài viết thỏa mãn điều kiện
+    const total = await Article.countDocuments(query);
+
+    res.status(200).json({
+      message: 'Articles retrieved successfully',
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit)),
+      total,
+      data: articles
+    });
+  } catch (error) {
+    console.error('Error getting articles:', error);
+    res.status(500).json({ message: 'Error getting articles' });
+  }
+};
+
+module.exports = { postArticle, editArticle, deleteArticle, getAllArticles };
