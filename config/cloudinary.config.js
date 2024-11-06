@@ -22,7 +22,7 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const uploadCloud = multer({ storage }).array("images ");
+const uploadCloud = multer({ storage }).array("images");
 const uploadCloudAvatar = multer({ storage }).array("avatar");
 
 module.exports = { uploadCloud, uploadCloudAvatar };

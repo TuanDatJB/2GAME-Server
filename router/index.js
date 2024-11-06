@@ -31,7 +31,7 @@ router.get('/article/get', articleController.getAllArticles);
 router.post('/game/add', gameController.addGame);
 router.put('/game/update/:id', gameController.updateGame);
 router.delete('/game/delete/:id', gameController.deleteGame);
-
+router.get('/game/get', gameController.getAllGames);
 // Comment
 router.post('/comment/add', commentController.addComment);
 router.put('/comment/update/:id', commentController.updateComment);

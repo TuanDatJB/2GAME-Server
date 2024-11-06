@@ -109,4 +109,14 @@ const deleteGame = async (req, res) => {
   }
 };
 
-module.exports = { addGame, updateGame, deleteGame };
+const getAllGames = async (req, res) => {
+  try {
+    const games = await Game.find(); // Retrieve all games from the database
+    res.status(200).json(games); // Send the games as a JSON response
+  } catch (error) {
+    console.error('Error fetching games:', error);
+    res.status(500).json({ message: 'Error fetching games' });
+  }
+};
+
+module.exports = { addGame, updateGame, deleteGame, getAllGames };

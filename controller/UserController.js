@@ -14,14 +14,12 @@ const userController = {
         }
   
         const { email, password, phoneNumber, username } = req.body;
-        const avatar = req.files.map(file => file.path)[0]; // Assuming single file upload for avatar
   
         const newUser = new User({
           email,
           password,
           phoneNumber,
           username,
-          avatar
         });
   
         // Hash the password before saving
