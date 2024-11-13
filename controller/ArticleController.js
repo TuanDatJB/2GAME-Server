@@ -9,7 +9,7 @@ const postArticle = async (req, res) => {
       }
 
       const { title, content, author, category, tags, videos } = req.body;
-      const images = req.files.map(file => file.path);
+      const images = req.files && req.files.length > 0 ? req.files.map(file => file.path) : [];
 
       const newArticle = new Article({
         title,
