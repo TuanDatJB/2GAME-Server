@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { requiredSignin } = require('../middlewares/authMiddleware');
 
 
 
@@ -15,6 +16,7 @@ router.post('/user/register', userController.register);
 router.post('/user/login', userController.Login);
 router.post('/user/changepassword', userController.changePassword);
 router.get('/user/get', userController.getAllUsers);
+router.put('/user/update/:id', userController.updateUserInfo);
 // Category
 router.post('/category/add', categoryController.addCategory);
 router.put('/category/update/:id', categoryController.updateCategory);
@@ -23,10 +25,10 @@ router.get('/category/get', categoryController.getAllCategories);
 
 //Artical
 
-router.post('/article/post', articleController.postArticle);
+router.post('/article/post', requiredSignin, articleController.postArticle);
 router.put('/article/edit/:id', articleController.editArticle);
 router.delete('/article/delete/:id', articleController.deleteArticle);
-router.get('/article/get', articleController.getAllArticles);
+router.get('/article/get', requiredSignin, articleController.getAllArticles);
 // Game
 router.post('/game/add', gameController.addGame);
 router.put('/game/update/:id', gameController.updateGame);

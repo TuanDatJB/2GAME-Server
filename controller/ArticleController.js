@@ -7,8 +7,8 @@ const postArticle = async (req, res) => {
       if (err) {
         return res.status(400).json({ message: 'Image upload failed', error: err });
       }
-
-      const { title, content, author, category, tags, videos } = req.body;
+      const author = req.user._id;
+      const { title, content, category, tags, videos } = req.body;
       const images = req.files.map(file => file.path);
 
       const newArticle = new Article({
