@@ -14,14 +14,12 @@ const userController = {
         }
   
         const { email, password, phoneNumber, username } = req.body;
-        const avatar = req.files.map(file => file.path)[0]; // Assuming single file upload for avatar
   
         const newUser = new User({
           email,
           password,
           phoneNumber,
           username,
-          avatar
         });
   
         // Hash the password before saving
@@ -104,6 +102,50 @@ getAllUsers: async (req, res) => {
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Error fetching users' });
+  }
+},
+
+// Update user information including avatar
+updateUserInfo: async (req, res) => {
+  try {
+    const { id } = req.params; // Assuming the user ID is passed as a URL parameter
+
+    // Use the uploadCloudAvatar middleware to handle avatar upload
+    uploadCloudAvatar(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ message: 'Avatar upload failed', error: err });
+      }
+
+      // Access the fields from req.body
+      const { email, phoneNumber, username, bio } = req.body;
+
+      // If an avatar is uploaded, get the URL
+      let avatarUrl;
+      if (req.files && req.files.length > 0) {
+        avatarUrl = req.files[0].path;
+      }
+
+      // Find the user by ID and update the fields
+      const updateData = { email, phoneNumber, username, bio };
+      if (avatarUrl) {
+        updateData.avatar = avatarUrl;
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true } // Return the updated document and run validators
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({ message: 'User information updated successfully', user: updatedUser });
+    });
+  } catch (error) {
+    console.error('Error updating user information:', error);
+    res.status(500).json({ message: 'Error updating user information' });
   }
 }
 
